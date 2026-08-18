@@ -1,141 +1,311 @@
+# SkillNovaGroup T&D — Database Migrations
+
+Este repositório centraliza todas as migrations do schema do banco de dados **PostgreSQL (Neon)** para o módulo de **Treinamentos (T&D)**.
+
+O projeto utiliza **Knex.js** como query builder e ferramenta de migrations, permitindo versionamento do schema, aplicação controlada de alterações e rollback das migrações.
+
 ## 📋 Sobre o Projeto
 
-Este repositório centraliza todas as migrations do schema do banco de dados PostgreSQL (Neon) para o módulo de Treinamentos. Utiliza **Knex.js** como query builder e migration tool, garantindo versionamento seguro e rollbacks controlados do schema.
+As migrations definem a estrutura do banco de dados utilizada pela aplicação, incluindo:
 
+* Usuários e equipes;
+* Treinamentos e sessões;
+* Participantes;
+* Relacionamentos entre equipes e treinamentos;
+* Histórico e auditoria;
+* Notificações e alertas;
+* ENUMs e constraints de integridade;
+* Geração de UUIDs por meio da extensão `pgcrypto`.
+
+---
 
 ## 📦 Estrutura de Migrações
 
-As migrações estão organizadas em ordem lógica e cronológica:
+As migrações estão organizadas em ordem lógica e cronológica.
 
-### 1️⃣ Core Setup (Enums & Base)
-- **202608150001_create_enums.ts** - Criação de tipos ENUM:
-  - `user_role` (MASTER, MANAGER, COORDINATOR, TECHNICIAN)
-  - `training_type` (MANDATORY, OPTIONAL)
-  - `participation_status` (PARTICIPATED, ABSENT)
-  - `training_evaluation` (POOR, GOOD, VERY_GOOD)
-  - `notification_channel`
-  - Extensão pgcrypto para UUIDs
+### 1️⃣ Core Setup — ENUMs e Base
+
+* `202608150001_create_enums.ts`
+
+  * Criação dos tipos ENUM:
+
+    * `user_role` — `MASTER`, `MANAGER`, `COORDINATOR`, `TECHNICIAN`
+    * `training_type` — `MANDATORY`, `OPTIONAL`
+    * `participation_status` — `PARTICIPATED`, `ABSENT`
+    * `training_evaluation` — `POOR`, `GOOD`, `VERY_GOOD`
+    * `notification_channel`
+  * Habilitação da extensão `pgcrypto` para geração de UUIDs.
 
 ### 2️⃣ Tabelas Base
-- **202608150002_create_teams.ts** - Tabela de equipes/times
-- **202608150003_create_users.ts** - Tabela de usuários
-- **202608150004_add_team_user_relationships.ts** - Relacionamentos entre teams e users
 
-### 3️⃣ Histórico & Auditoria
-- **202608150005_create_user_role_history.ts** - Rastreamento de mudanças de role
-- **202608150008_create_training_session_history.ts** - Histórico de sessões
-- **202608150011_create_training_participant_history.ts** - Histórico de participantes
+* `202608150002_create_teams.ts` — criação da tabela de equipes.
+* `202608150003_create_users.ts` — criação da tabela de usuários.
+* `202608150004_add_team_user_relationships.ts` — relacionamentos entre equipes e usuários.
 
-### 4️⃣ Treinamentos & Sessões
-- **202608150006_create_trainings.ts** - Cadastro de treinamentos
-- **202608150007_create_training_sessions.ts** - Sessões de treinamento
-- **202608150012_create_training_teams.ts** - Associação teams com trainings
+### 3️⃣ Histórico e Auditoria
 
-### 5️⃣ Participantes & Notificações
-- **202608150009_create_training_participants.ts** - Participantes de treinamentos
-- **202608150010_create_notification_alerts.ts** - Sistema de alertas
-- **20260816013_add_created_by_to_notification_alerts.ts** - Auditoria de notificações
-- **20260816014_fix_training_participant_evaluation_constraint.ts** - Correção de constraints
+* `202608150005_create_user_role_history.ts` — histórico de alterações de perfil/role.
+* `202608150008_create_training_session_history.ts` — histórico das sessões de treinamento.
+* `202608150011_create_training_participant_history.ts` — histórico dos participantes.
+
+### 4️⃣ Treinamentos e Sessões
+
+* `202608150006_create_trainings.ts` — cadastro de treinamentos.
+* `202608150007_create_training_sessions.ts` — cadastro de sessões.
+* `202608150012_create_training_teams.ts` — associação entre treinamentos e equipes.
+
+### 5️⃣ Participantes e Notificações
+
+* `202608150009_create_training_participants.ts` — participantes dos treinamentos.
+* `202608150010_create_notification_alerts.ts` — sistema de notificações e alertas.
+* `20260816013_add_created_by_to_notification_alerts.ts` — inclusão de auditoria nas notificações.
+* `20260816014_fix_training_participant_evaluation_constraint.ts` — correção de constraint relacionada à avaliação dos participantes.
+
+---
 
 ## 🚀 Início Rápido
 
 ### Pré-requisitos
-- **Node.js** 18+ 
-- **PNPM** 11.17.0+
-- **PostgreSQL** (usando Neon Cloud)
+
+* **Node.js** 18+
+* **PNPM** 11.17.0+
+* **PostgreSQL** — banco hospedado no **Neon**
 
 ### Instalação
 
 ```bash
 # 1. Clone o repositório
 git clone <seu-repo>
+
+# 2. Acesse o diretório
 cd SkillNovaGroup_T&D-migrations
 
-# 2. Instale as dependências
+# 3. Instale as dependências
 pnpm install
+```
 
-# 3. Configure as variáveis de ambiente
+### Configuração do ambiente
+
+Crie o arquivo `.env` a partir do exemplo:
+
+```bash
 cp .env.example .env
-# Edite .env com suas credenciais
+```
 
+Configure as credenciais de conexão com o PostgreSQL:
+
+```env
 DB_HOST=
 DB_PORT=5432
 DB_NAME=
 DB_USER=
 DB_PASSWORD=
+```
 
+> **Importante:** nunca versione o arquivo `.env` ou credenciais de acesso ao banco.
 
-# Executar todas as migrações pendentes
+---
+
+## 🗄️ Executando as Migrações
+
+### Aplicar todas as migrations pendentes
+
+```bash
 pnpm run migrate:latest
+```
 
-# Desfazer a última migração
+### Desfazer a última migration
+
+```bash
 pnpm run migrate:rollback
+```
 
-# Verificar status das migrações
+### Verificar o status das migrations
+
+```bash
 pnpm run migrate:status
+```
 
-# Executar comando knex customizado
+### Executar comandos personalizados do Knex
+
+```bash
 pnpm run knex -- <comando>
+```
 
+---
 
+## 🗂️ Modelo de Dados
+
+A estrutura principal do banco pode ser representada da seguinte forma:
+
+```text
 teams 1 ──────────── N users
-         │
-         └─→ manager_id (users)
-         └─→ coordinator_id (users)
+  │                    │
+  │                    ├──→ notification_alerts (N)
+  │                    └──→ team_user_relationships (N)
+  │
+  ├──→ manager_id      → users
+  └──→ coordinator_id  → users
 
-trainings N ──────────── N teams (training_teams)
-           │
-           └─→ training_sessions 1 ──────────── N training_participants
-                                  │
-                                  └─→ users
+
+trainings N ──────────── N teams
+              │
+              └──→ training_teams
+                       │
+                       └──→ training_sessions 1 ──────── N training_participants
+                                                        │
+                                                        └──→ users
+
 
 users 1 ──────────── N training_participants
-    │
-    └─→ notification_alerts (many)
-    └─→ team_user_relationships (many)
+```
 
-    🛠️ Troubleshooting
-Erro: "Connection refused"
-Verifique as credenciais no .env
-Confirme que o banco Neon está acessível
-Teste a conexão: pnpm run knex -- migrate:status
-Erro: "Migration already run"
-Algumas migrações podem ter sido aplicadas manualmente
-Verifique a tabela knex_migrations no DB
-Erro: "Cannot find module"
-Execute: pnpm install
-Limpe cache: rm -rf node_modules && pnpm install
-📊 Versionamento
-Versão Atual: 1.0.0
-Ultima Migração: 20260816014
-🤝 Contribuindo
-Sempre crie uma migração para mudanças no schema
-Nunca altere migrations já aplicadas
-Teste localmente antes de fazer push
-Escreva migrations idempotentes quando possível
-🔐 Segurança
-✅ Extensão pgcrypto habilitada para UUIDs seguros
-✅ Variáveis de ambiente nunca commitadas
-✅ Constraints de integridade referencial
-✅ Campos de auditoria (created_at, created_by)
+### Principais relacionamentos
 
+* Uma **team** pode possuir vários usuários.
+* Uma **team** possui referências para `manager_id` e `coordinator_id`.
+* Um **training** pode estar associado a várias equipes.
+* Uma **team** pode estar associada a vários treinamentos.
+* Um **training** pode possuir várias sessões.
+* Uma **training_session** pode possuir vários participantes.
+* Um **user** pode participar de vários treinamentos.
+* Usuários podem possuir vários registros de notificações.
+* Usuários podem possuir vários relacionamentos de equipe.
 
-📚 Dependências
+---
 
+## 🛠️ Troubleshooting
+
+### `Connection refused`
+
+Verifique:
+
+1. As credenciais configuradas no `.env`;
+2. Se o banco Neon está acessível;
+3. Se os parâmetros de conexão estão corretos.
+
+Teste o acesso ao banco com:
+
+```bash
+pnpm run knex -- migrate:status
+```
+
+### `Migration already run`
+
+Esse erro pode ocorrer quando uma migration já foi aplicada no banco.
+
+Verifique a tabela:
+
+```text
+knex_migrations
+```
+
+Ela mantém o registro das migrations executadas.
+
+> Evite alterar ou remover manualmente registros dessa tabela, especialmente em ambientes compartilhados ou de produção.
+
+### `Cannot find module`
+
+Reinstale as dependências:
+
+```bash
+pnpm install
+```
+
+Se necessário, remova `node_modules` e reinstale:
+
+```bash
+rm -rf node_modules
+pnpm install
+```
+
+No Windows PowerShell:
+
+```powershell
+Remove-Item -Recurse -Force node_modules
+pnpm install
+```
+
+---
+
+## 📊 Versionamento
+
+| Informação       | Valor         |
+| ---------------- | ------------- |
+| Versão atual     | `1.0.0`       |
+| Última migration | `20260816014` |
+| Banco de dados   | PostgreSQL    |
+| Hospedagem       | Neon          |
+| Migration tool   | Knex.js       |
+
+---
+
+## 🤝 Contribuindo
+
+Ao realizar alterações no schema:
+
+* Sempre crie uma **nova migration** para alterações estruturais.
+* **Nunca altere migrations já aplicadas** em ambientes compartilhados.
+* Teste as migrations localmente antes de realizar o push.
+* Sempre que possível, implemente migrations de forma **idempotente**.
+* Considere o impacto das alterações sobre as constraints e relacionamentos existentes.
+* Mantenha a ordem cronológica das migrations.
+
+---
+
+## 🔐 Segurança
+
+O projeto adota algumas medidas para preservar a integridade e segurança do banco:
+
+* `pgcrypto` habilitado para geração de UUIDs;
+* Variáveis de ambiente utilizadas para credenciais;
+* Arquivo `.env` não deve ser versionado;
+* Constraints de integridade referencial;
+* Campos de auditoria, como `created_at` e `created_by`;
+* Histórico para alterações relevantes.
+
+---
+
+## 📚 Dependências
+
+Principais dependências utilizadas:
+
+```json
 {
-  "knex": "^3.3.0",           // Query builder & migrations
-  "pg": "^8.23.0",            // Driver PostgreSQL
-  "dotenv": "^17.4.2",        // Variáveis de ambiente
-  "typescript": "^7.0.2",     // Type safety
-  "ts-node": "^10.9.2",       // Executar TypeScript
-  "tsx": "^4.23.12"           // Executor TS rápido
+  "knex": "^3.3.0",
+  "pg": "^8.23.0",
+  "dotenv": "^17.4.2",
+  "typescript": "^7.0.2",
+  "ts-node": "^10.9.2",
+  "tsx": "^4.23.12"
 }
+```
 
+| Dependência  | Finalidade                              |
+| ------------ | --------------------------------------- |
+| `knex`       | Query builder e migrations              |
+| `pg`         | Driver PostgreSQL                       |
+| `dotenv`     | Gerenciamento de variáveis de ambiente  |
+| `typescript` | Tipagem e desenvolvimento em TypeScript |
+| `ts-node`    | Execução de TypeScript                  |
+| `tsx`        | Executor rápido para TypeScript         |
 
-📞 Suporte
+---
 
-Para dúvidas ou problemas:
+## 📞 Suporte e Documentação
 
-Verificar logs: pnpm run migrate:status
-Consultar documentação Knex: https://knexjs.org/
-Documentação Neon: https://neon.tech/docs
+Em caso de dúvidas ou problemas:
+
+### Status das migrations
+
+```bash
+pnpm run migrate:status
+```
+
+### Documentação do Knex
+
+[Knex.js Documentation](https://knexjs.org/?utm_source=chatgpt.com)
+
+### Documentação do Neon
+
+[Neon Documentation](https://neon.tech/docs?utm_source=chatgpt.com)
